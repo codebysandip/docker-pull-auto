@@ -10,11 +10,23 @@ import { ConfigApp, DockerTagResponse } from "./app.model";
 export class AppService {
   constructor(private readonly httpService: HttpService) {}
 
+  /**
+   * Verify signature of github payload. You can set secret on Github webhook.
+   * Github will use secret to createHmac from payload and will send in header key x-hub-signature-256
+   * @param body payload of Github webhook
+   * @param header github sends x-hub-signature-256 header
+   * @returns boolean
+   */
   verifySignature(body: unknown, header: string) {
-    const signature = createHmac("sha256", process.env.GITHUB_HOOK_SECRET).update(JSON.stringify(body)).digest("hex");
+    const signature = createHmac("sha256", process.env.HOOK_SECRET).update(JSON.stringify(body)).digest("hex");
     return `sha256=${signature}` === header;
   }
 
+  /**
+   * Get tag from docker hub and pull latest docker image
+   * @param app ConfigApp which reside in config.json
+   * @returns image with tag string in case of success. In case of failure returns { error: string }
+   */
   getTagAndPullImage(app: ConfigApp): Observable<string | { error: string } | { message: string }> {
     const url = `https://registry.hub.docker.com/v2/repositories/${app.docker.image}/tags?page_size=20&sort=last_updated`;
     return this.httpService.get<DockerTagResponse>(url).pipe(
@@ -74,5 +86,17 @@ export class AppService {
         return of({ error });
       }),
     );
+  }
+
+  dockerLogin() {
+    return new Promise<string>((resolve) => {
+      exec(`docker login -u ${process.env.DOCKER_USERNAME} -p ${process.env.DOCKER_TOKEN}`, (err) => {
+        if (err) {
+          resolve(`Unable to login docker. Error: ${err.message}`);
+        } else {
+          resolve("");
+        }
+      });
+    });
   }
 }

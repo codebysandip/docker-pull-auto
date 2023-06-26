@@ -232,16 +232,33 @@ export interface DockerApp {
 }
 
 export interface Config {
+  /**
+   * Docker apps
+   */
   apps: ConfigApp[];
 }
 
 export interface ConfigApp {
+  /**
+   * Repository info
+   */
   repo: ConfigRepo;
+  /**
+   * Docker info
+   */
   docker: ConfigDocker;
 }
 
 export interface ConfigRepo {
+  /**
+   * Repository url
+   * @example https://github.com/codebysandip/react-ssr-doc
+   */
   url: string;
+  /**
+   * branch for which docker pull will work
+   * @example development
+   */
   branch: string;
 }
 
@@ -251,10 +268,29 @@ export enum DockerHostedOn {
 }
 
 export interface ConfigDocker {
+  /**
+   * Docker image
+   * @example sandipj/react-ssr-doc
+   */
   image: string;
+  /**
+   * tag regex to match tag
+   * We get all tags from docker and match with tagRegex
+   */
   tagRegex: string;
+  /**
+   * where docker image hosted on
+   * @enum {DockerHostedOn}
+   */
   hostedOn: DockerHostedOn;
+  /**
+   * Name which will use to run docker image
+   */
   name: string;
+  /**
+   * Internal and external
+   * @example 3000:5000
+   */
   port: string;
 }
 

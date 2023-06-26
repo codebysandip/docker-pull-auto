@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Post, Req, Res } from "@nestjs/common";
+import { Body, Controller, Post, Req, Res } from "@nestjs/common";
 import { exec, execSync } from "child_process";
+import { parse } from "comment-json";
 import { Request, Response } from "express";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
@@ -11,6 +12,11 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Post("github/workflow")
+  /**
+   * This api get called when workflow will run
+   * We entertain here only completed status
+   * This api matches repository from config.json. If found pulls latest docker image, runs image and deletes old image
+   */
   async workflowRun(@Body() payload: WorkflowPayload, @Req() req: Request, @Res() res: Response) {
     if (!this.appService.verifySignature(payload, req.headers["x-hub-signature-256"] as string)) {
       res.status(400).json({
@@ -52,6 +58,12 @@ export class AppController {
 
       const containerApps = await this.getRunningDockerContainers();
       const containerApp = containerApps.find((ca) => ca.Image.startsWith(app.docker.image));
+
+      const errorMsg = await this.appService.dockerLogin();
+      if (errorMsg) {
+        res.status(500).json({ error: errorMsg });
+        return;
+      }
 
       if (!containerApp) {
         // get latest tag, pull the image and start
@@ -112,7 +124,10 @@ export class AppController {
     }
   }
 
-  @Get("test")
+  /**
+   * Get running docker containers on system. This method uses command docker ps --format json
+   * @returns running docker containers
+   */
   getRunningDockerContainers() {
     return new Promise<DockerApp[]>((resolve) => {
       const appsRunning: DockerApp[] = [];
@@ -137,6 +152,10 @@ export class AppController {
     });
   }
 
+  /**
+   * reads config.json
+   * @returns Config
+   */
   getConfig(): Config | null {
     const configPath = join(process.cwd(), "config.json");
     if (!existsSync(configPath)) {
@@ -145,8 +164,9 @@ export class AppController {
     }
     const configStr = readFileSync(configPath, { encoding: "utf8" });
     if (configStr) {
+      console.log("config", configStr);
       try {
-        const config: Config = JSON.parse(configStr);
+        const config: Config = parse(configStr) as any;
         return config;
       } catch (err) {
         console.error("Invalid config json!!", err);
