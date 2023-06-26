@@ -32,9 +32,8 @@ jobs:
         with:
           host: ${{ secrets.SERVER_HOST }}
           user: ${{ secrets.SERVER_USERNAME }}
-          pass: ${{ secrets.SERVER_USERNAME }}
+          pass: ${{ secrets.SERVER_PASSWORD }}
           run: |
             cd /home/ubuntu/docker-pull-auto
             npm i --omit=dev
-            npm i -g pm2
             npm run pm2:start
