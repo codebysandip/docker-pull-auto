@@ -9,6 +9,7 @@ name: Build and scp to server
 jobs:
   build_and_scp:
     runs-on: ubuntu-latest
+    environment: prod
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
