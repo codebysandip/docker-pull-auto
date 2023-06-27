@@ -24,7 +24,12 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This project developed on [Nest](https://github.com/nestjs/nest) framework. Idea of this project is to pull docker images automatically on server whenever there is push. Github webhook calls docker pull auto api whenever workflow runs on github.
+You add a config.json file for your docker containers which need to pull auto. Wheneever recieve request on api, api compares with config file and gets app. App constains information about repository and docker image. API uses this information to pull latest image from docker, runs this pulled image and also delete old image if exist.
+
+## High level diagram
+
+![High level diagram of docker pull auto](./docs/assets/docker-auto-pull-flow.drawio.png)
 
 ## Installation
 
@@ -34,18 +39,37 @@ $ npm install
 
 ## Running the app
 
+- Create a .env file at the root with follwing content:
+
+  ```typescript
+  HOOK_SECRET = yourSecret;
+  DOCKER_USERNAME = yourUser;
+  DOCKER_TOKEN = yourToken;
+  PORT = 7002;
+  ```
+
+- Add a config.json for your app(s). You can take referenece from [config.example.json](./config.example.json)
+- Run application
+
+  ```bash
+  # development
+  $ npm run start
+
+  # watch mode
+  $ npm run start:dev
+
+  # production mode
+  $ npm run start:prod
+  ```
+
+## Build
+
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+# Build the project
+$ npm run build
 ```
 
-## Test
+<!-- ## Test
 
 ```bash
 # unit tests
@@ -56,18 +80,15 @@ $ npm run test:e2e
 
 # test coverage
 $ npm run test:cov
-```
+``` -->
 
-## Support
+## Pre reqisuites for server
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- Docker
+- Node 16.x or higher
+- pm2 (`sudo npm i -g pm2`)
 
-## Stay in touch
+## Useful Links
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+- ### [What is HOOK_SECRET and How to create HOOK_SECRET](./docs/how-to-create-hook-secret.md)
+- ### [How to create multiple config based on environment](./docs/how-to-create-multiple-config-based-on-env.md)

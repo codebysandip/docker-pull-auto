@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build --webpack --webpackPath ./config/nest-webpack.config.js",
+    "build:development": "cross-env NODE_ENV=development nest build --webpack --webpackPath ./config/nest-webpack.config.js",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch --webpack --webpackPath ./config/nest-webpack.config.js",

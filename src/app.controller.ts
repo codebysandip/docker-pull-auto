@@ -157,7 +157,8 @@ export class AppController {
    * @returns Config
    */
   getConfig(): Config | null {
-    const configPath = join(process.cwd(), "config.json");
+    const configFile = process.env.NODE_ENV ? `config.${process.env.NODE_ENV}.json` : "config.json";
+    const configPath = join(process.cwd(), configFile);
     if (!existsSync(configPath)) {
       console.error("config.json doesn't exist on path ", configPath);
       return null;
