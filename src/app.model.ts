@@ -236,6 +236,11 @@ export interface Config {
    * Docker apps
    */
   apps: ConfigApp[];
+  /**
+   * command to run before reading config.json.
+   * This enables decryption of config.json via sops or similar tool
+   */
+  runCommandBeforeConfigRead: string;
 }
 
 export interface ConfigApp {
@@ -292,6 +297,11 @@ export interface ConfigDocker {
    * @example 3000:5000
    */
   port: string;
+  /**
+   * docker environment variables
+   * These variables passed as environment variables while running docker image
+   */
+  env: Record<string, string>;
 }
 
 export interface DockerTagResponse {

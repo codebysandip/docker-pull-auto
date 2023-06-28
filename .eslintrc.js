@@ -34,5 +34,6 @@ module.exports = {
         endOfLine: "auto",
       },
     ],
+    "no-trailing-spaces": ["error", { "ignoreComments": true }]
   },
 };

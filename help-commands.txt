@@ -1,0 +1,11 @@
+// import pulbic gpg key
+gpg --batch --import .\pgp\dockerpullauto-pub.asc
+
+// import private gpg key. --allow-secret-key-import will enable to read passphrase and will disable pormpt
+gpg --allow-secret-key-import --import .\pgp\dockerpullauto-sec.asc
+
+// encrypt config.json env key only 
+sops -e --encrypted-regex "env" config.json > config.enc.json
+
+// decrypt config.enc.json again with sops
+sops -d config.enc.json > config.json

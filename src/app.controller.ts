@@ -1,10 +1,10 @@
 import { Body, Controller, Post, Req, Res } from "@nestjs/common";
-import { exec, execSync } from "child_process";
+import { execSync } from "child_process";
 import { parse } from "comment-json";
 import { Request, Response } from "express";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
-import { Config, DockerApp, DockerHostedOn, WorkflowPayload, WorkflowStatus } from "./app.model";
+import { Config, DockerHostedOn, WorkflowPayload, WorkflowStatus } from "./app.model";
 import { AppService } from "./app.service";
 
 @Controller()
@@ -56,14 +56,14 @@ export class AppController {
         return;
       }
 
-      const containerApps = await this.getRunningDockerContainers();
-      const containerApp = containerApps.find((ca) => ca.Image.startsWith(app.docker.image));
-
       const errorMsg = await this.appService.dockerLogin();
       if (errorMsg) {
         res.status(500).json({ error: errorMsg });
         return;
       }
+
+      const containerApps = await this.appService.getRunningDockerContainers();
+      const containerApp = containerApps.find((ca) => ca.Image.startsWith(app.docker.image));
 
       if (!containerApp) {
         // get latest tag, pull the image and start
@@ -98,7 +98,11 @@ export class AppController {
               execSync(`docker stop ${containerApp.ID}`);
 
               console.log(`Running docker image ${imageWithTag}`);
-              execSync(`docker run --name ${app.docker.name} -d -p ${app.docker.port} -it ${imageWithTag} --rm`);
+              let dockeRunScript = `docker run --name ${app.docker.name} -d -p ${app.docker.port} -it ${imageWithTag} --rm`;
+              Object.keys(app.docker.env).forEach((envKey) => {
+                dockeRunScript += ` -e ${envKey}=${app.docker.env[envKey]}`;
+              });
+              execSync(dockeRunScript);
 
               console.log(`Deleting old image ${containerApp.Image}`);
               execSync(`docker image rm ${containerApp.Image}`);
@@ -125,49 +129,31 @@ export class AppController {
   }
 
   /**
-   * Get running docker containers on system. This method uses command docker ps --format json
-   * @returns running docker containers
-   */
-  getRunningDockerContainers() {
-    return new Promise<DockerApp[]>((resolve) => {
-      const appsRunning: DockerApp[] = [];
-      exec("docker ps --format json", (err, stdout, stderr) => {
-        if (err) {
-          console.error("Error in installing package.json!!", err);
-          resolve(appsRunning);
-
-          return;
-        }
-        if (stderr) {
-          console.error("StdError in installing package.json!!", stderr);
-          resolve(appsRunning);
-          return;
-        }
-        stdout
-          .split(/\n/g)
-          .filter((str) => !!str)
-          .forEach((str) => appsRunning.push(JSON.parse(str)));
-        resolve(appsRunning);
-      });
-    });
-  }
-
-  /**
    * reads config.json
    * @returns Config
    */
-  getConfig(): Config | null {
+  getConfig(commandToRun?: string): Config | null {
+    if (commandToRun) {
+      execSync(commandToRun);
+    }
     const configFile = process.env.NODE_ENV ? `config.${process.env.NODE_ENV}.json` : "config.json";
-    const configPath = join(process.cwd(), configFile);
+    const configEncFile = process.env.NODE_ENV ? `config.${process.env.NODE_ENV}.enc.json` : "config.enc.json";
+    const configEncFilePath = join(process.cwd(), configEncFile);
+    let configPath = join(process.cwd(), configFile);
+    if (!commandToRun && existsSync(configEncFilePath)) {
+      configPath = configEncFilePath;
+    }
     if (!existsSync(configPath)) {
       console.error("config.json doesn't exist on path ", configPath);
       return null;
     }
     const configStr = readFileSync(configPath, { encoding: "utf8" });
     if (configStr) {
-      console.log("config", configStr);
       try {
         const config: Config = parse(configStr) as any;
+        if (config.runCommandBeforeConfigRead && !commandToRun) {
+          return this.getConfig(config.runCommandBeforeConfigRead);
+        }
         return config;
       } catch (err) {
         console.error("Invalid config json!!", err);

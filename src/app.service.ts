@@ -4,7 +4,7 @@ import { exec } from "child_process";
 import { createHmac } from "crypto";
 import { Observable, of } from "rxjs";
 import { catchError, mergeMap } from "rxjs/operators";
-import { ConfigApp, DockerTagResponse } from "./app.model";
+import { ConfigApp, DockerApp, DockerTagResponse } from "./app.model";
 
 @Injectable()
 export class AppService {
@@ -96,6 +96,34 @@ export class AppService {
         } else {
           resolve("");
         }
+      });
+    });
+  }
+
+  /**
+   * Get running docker containers on system. This method uses command docker ps --format json
+   * @returns running docker containers
+   */
+  getRunningDockerContainers() {
+    return new Promise<DockerApp[]>((resolve) => {
+      const appsRunning: DockerApp[] = [];
+      exec("docker ps --format json", (err, stdout, stderr) => {
+        if (err) {
+          console.error("Error in installing package.json!!", err);
+          resolve(appsRunning);
+
+          return;
+        }
+        if (stderr) {
+          console.error("StdError in installing package.json!!", stderr);
+          resolve(appsRunning);
+          return;
+        }
+        stdout
+          .split(/\n/g)
+          .filter((str) => !!str)
+          .forEach((str) => appsRunning.push(JSON.parse(str)));
+        resolve(appsRunning);
       });
     });
   }

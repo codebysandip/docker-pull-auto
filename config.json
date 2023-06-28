@@ -1,17 +1,21 @@
 {
-  "apps": [
-    {
-      "repo": {
-        "url": "https://github.com/codebysandip/react-ssr-doc", // url of repository
-        "branch": "main" // branch for which docker will work
-      },
-      "docker": {
-        "image": "sandipj/react-ssr-doc", // image on docker
-        "tagRegex": "prod-[\\da-z]{8,8}-\\d{9,11}$", // tag regex for matching
-        "hostedOn": "docker-hub", // where your docker image hosted. Values can be docker-hub, aws
-        "name": "react-ssr-doc", // name which will use to run docker image
-        "port": "6500:5000" // port on which docker will expose and inside container
-      }
-    }
-  ]
+	"apps": [
+		{
+			"repo": {
+				"url": "https://github.com/codebysandip/react-ssr-doc",
+				"branch": "main"
+			},
+			"docker": {
+				"image": "sandipj/react-ssr-doc",
+				"tagRegex": "prod-[\\da-z]{8,8}-\\d{9,11}$",
+				"hostedOn": "docker-hub",
+				"name": "react-ssr-doc",
+				"port": "6500:5000",
+				"env": {
+					"mySecret": "my secret value"
+				}
+			}
+		}
+	],
+	"runCommandBeforeConfigRead": "sops -d config.enc.json \u003e config.json"
 }

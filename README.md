@@ -90,5 +90,7 @@ $ npm run test:cov
 
 ## Useful Links
 
-- ### [What is HOOK_SECRET and How to create HOOK_SECRET](./docs/how-to-create-hook-secret.md)
-- ### [How to create multiple config based on environment](./docs/how-to-create-multiple-config-based-on-env.md)
+- #### [How to add docker container app in config for auto pull](./docs/how-to-add-docker-container-app.md)
+
+- #### [What is HOOK_SECRET and How to create HOOK_SECRET](./docs/how-to-create-hook-secret.md)
+- #### [How to create multiple config based on environment](./docs/how-to-create-multiple-config-based-on-env.md)

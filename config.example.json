@@ -10,7 +10,11 @@
         "tagRegex": "prod-[\\da-z]{8,8}-\\d{9,11}$", // tag regex for matching
         "hostedOn": "docker-hub", // where your docker image hosted. Values can be docker-hub, aws
         "name": "react-ssr-doc", // name which will use to run docker image
-        "port": "6500:5000" // port on which docker will expose and inside container
+        "port": "6500:5000", // port on which docker will expose and inside container,
+        "env": {
+          // docker environment variables
+          "myKey": "my secret value"
+        }
       }
     }
   ]
