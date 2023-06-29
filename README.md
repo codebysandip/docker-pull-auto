@@ -39,7 +39,7 @@ $ npm install
 
 ## Running the app
 
-- Create a .env file at the root with follwing content:
+- Create a .env file at the root with following content:
 
   ```typescript
   HOOK_SECRET = yourSecret;
@@ -90,7 +90,9 @@ $ npm run test:cov
 
 ## Useful Links
 
-- #### [How to add docker container app in config for auto pull](./docs/how-to-add-docker-container-app.md)
+- #### [How to add docker container app for auto pull in config json](./docs/how-to-add-docker-container-app.md)
 
 - #### [What is HOOK_SECRET and How to create HOOK_SECRET](./docs/how-to-create-hook-secret.md)
 - #### [How to create multiple config based on environment](./docs/how-to-create-multiple-config-based-on-env.md)
+- #### [How to encrypt config.json](./docs/how-to-encrypt-config-json.md)
+- #### [How to add environment file for Docker App/ Config App](./docs/how-to-add-environment-file-for-config-app.md)

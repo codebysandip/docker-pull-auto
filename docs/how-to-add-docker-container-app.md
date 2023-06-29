@@ -1,4 +1,4 @@
-# How to add docker container app for auto pull
+# How to add docker container app for auto pull in config json
 
 All the docker apps which needs to pull automatically reside in config.js. This project already have [config.example.json](../config.example.json) for example with comments added. Below is a example config.json
 
@@ -65,7 +65,15 @@ Example value for app.docker.port is `5000:3000`. first port used by docker to e
 
 ### **app.docker.env**
 
-app.docker.env i the environment variables in form of key value pair. Docker Pull Auto uses app.docker.env while running docker image and passes as environt variable.
+app.docker.env is the environment variables in form of key value pair. Docker Pull Auto uses app.docker.env while running docker image and passes as environment variable.
+
+### **app.docker.envFile**
+
+You can also have env file per docker app and can pass path in app.docker.envFile. This project have example for [react-ssr-doc](https://github.com/codebysandip/react-ssr-doc) which have secret env file.
+
+### **app.runCommandBeforeAccessApp**
+
+You can run a command before docker pull run docker image. You can run a command to decrypt env file before docker pull auto access it for running image.
 
 ## **runCommandBeforeConfigRead**
 

@@ -69,8 +69,7 @@ export class AppController {
         // get latest tag, pull the image and start
         this.appService.getTagAndPullImage(app).subscribe((imageWithTag) => {
           if (typeof imageWithTag === "string") {
-            console.log(`Running docker image ${imageWithTag}`);
-            execSync(`docker run --name ${app.docker.name} -d -p ${app.docker.port} -it ${imageWithTag}`);
+            this.appService.dockerRun(app, imageWithTag);
             if (res.headersSent) {
               return;
             }
@@ -97,12 +96,7 @@ export class AppController {
               console.log(`Stopping container ${containerApp.ID}`);
               execSync(`docker stop ${containerApp.ID}`);
 
-              console.log(`Running docker image ${imageWithTag}`);
-              let dockeRunScript = `docker run --name ${app.docker.name} -d -p ${app.docker.port} -it ${imageWithTag} --rm`;
-              Object.keys(app.docker.env).forEach((envKey) => {
-                dockeRunScript += ` -e ${envKey}=${app.docker.env[envKey]}`;
-              });
-              execSync(dockeRunScript);
+              this.appService.dockerRun(app, imageWithTag);
 
               console.log(`Deleting old image ${containerApp.Image}`);
               execSync(`docker image rm ${containerApp.Image}`);

@@ -1,11 +1,14 @@
-// import pulbic gpg key
-gpg --batch --import .\pgp\dockerpullauto-pub.asc
-
-// import private gpg key. --allow-secret-key-import will enable to read passphrase and will disable pormpt
-gpg --allow-secret-key-import --import .\pgp\dockerpullauto-sec.asc
-
 // encrypt config.json env key only 
-sops -e --encrypted-regex "env" config.json > config.enc.json
+sops -e --encrypted-regex "env" --age age1tsjl8t74tp2dsaaf7j246ndmhcd8hzt82vnpkk8g5a8hqvtl5y9s5y9vsf config.json > config.enc.json
+
+// export sops age key file location environment variable
+$ENV:SOPS_AGE_KEY_FILE="key.txt"
 
 // decrypt config.enc.json again with sops
 sops -d config.enc.json > config.json
+
+// encrypt env file with sops
+sops -e --age age1tsjl8t74tp2dsaaf7j246ndmhcd8hzt82vnpkk8g5a8hqvtl5y9s5y9vsf env/react-ssr-doc/.env.development > env/react-ssr-doc/.env.development.enc
+
+// decrypt env file
+sops -d  env/react-ssr-doc/.env.development.enc > env/react-ssr-doc/.env.development

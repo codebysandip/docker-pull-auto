@@ -1,6 +1,6 @@
 import { HttpService } from "@nestjs/axios";
 import { Injectable } from "@nestjs/common";
-import { exec } from "child_process";
+import { exec, execSync } from "child_process";
 import { createHmac } from "crypto";
 import { Observable, of } from "rxjs";
 import { catchError, mergeMap } from "rxjs/operators";
@@ -126,5 +126,27 @@ export class AppService {
         resolve(appsRunning);
       });
     });
+  }
+
+  dockerRun(app: ConfigApp, imageWithTag: string) {
+    if (app.runCommandBeforeAccessApp) {
+      console.log(`Running command: ${app.runCommandBeforeAccessApp}`);
+      execSync(app.runCommandBeforeAccessApp);
+    }
+    let dockeRunScript = `docker run --name ${app.docker.name} -d -p ${app.docker.port} -it ${imageWithTag} --rm`;
+    if (app.docker.env && typeof app.docker.env === "object") {
+      console.log("Reading env from app.docker.env");
+      Object.keys(app.docker.env).forEach((envKey) => {
+        dockeRunScript += ` -e ${envKey}=${app.docker.env[envKey]}`;
+      });
+    }
+
+    if (app.docker.envFile) {
+      dockeRunScript += ` --env-file ${app.docker.envFile}`;
+    }
+
+    console.log(`Running docker image ${imageWithTag}`);
+    console.log(`with command: ${dockeRunScript}`);
+    execSync(dockeRunScript);
   }
 }

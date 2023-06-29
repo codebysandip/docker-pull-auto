@@ -252,6 +252,11 @@ export interface ConfigApp {
    * Docker info
    */
   docker: ConfigDocker;
+  /**
+   * run command before access app.
+   * @example decrypt env file before docker app access env file
+   */
+  runCommandBeforeAccessApp?: string;
 }
 
 export interface ConfigRepo {
@@ -301,7 +306,12 @@ export interface ConfigDocker {
    * docker environment variables
    * These variables passed as environment variables while running docker image
    */
-  env: Record<string, string>;
+  env?: Record<string, string>;
+  /**
+   * path of env file.
+   * we pass env file while running docker image
+   */
+  envFile?: string;
 }
 
 export interface DockerTagResponse {

@@ -13,8 +13,10 @@
 				"port": "6500:5000",
 				"env": {
 					"mySecret": "my secret value"
-				}
-			}
+				},
+				"envFile": "env/react-ssr-doc/.env.development"
+			},
+			"runCommandBeforeAccessApp": "sops -d env/react-ssr-doc/.env.development.enc \u003e env/react-ssr-doc/.env.development"
 		}
 	],
 	"runCommandBeforeConfigRead": "sops -d config.enc.json \u003e config.json"
