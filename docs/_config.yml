@@ -1,9 +1,6 @@
 remote_theme: pages-themes/cayman@v0.2.0
-title: Docker Pull Auto - Automatically pull dcoker images when push
-description:
-  [
-    Idea of this project is to pull docker images automatically on server whenever there is push,
-    also delete old image if exist,
-  ]
+title: Docker Pull Auto - Automatically pull docker images when push
+description: Idea of this project is to pull docker images automatically on server whenever there is push. Also deletes old image if exist
+google_analytics: G-JEDLKV3VKC
 plugins:
   - jekyll-remote-theme # add this line to the plugins list if you already have one

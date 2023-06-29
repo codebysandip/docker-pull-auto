@@ -1,8 +1,8 @@
 # How to encrypt config.json
 
-config.json holds all the docker apps which needs to pull automaticaly. It's common to have secret values for backend applications like database password, jwt secret key etc. We can't save these secrets in config.json as raw value. To protect these secrets values, we can encrypt env part of config.json with [sops](https://github.com/mozilla/sops). I'm going to use sops for this example.
+config.json holds all the docker apps which needs to pull automatically. It's common to have secret values for backend applications like database password, jwt secret key etc. We can't save these secrets in config.json as raw value. To protect these secrets values, we can encrypt env part of config.json with [sops](https://github.com/mozilla/sops). I'm going to use sops for this example.
 
-Docker pull auto supports reading of config file in format config.enc.json and in case of multiple config based on envionment config.{NODE_ENV}.enc.json. Docker pull auto supports this format so that we can have encrypted config json.
+Docker pull auto supports reading of config file in format config.enc.json and in case of multiple config based on environment config.{NODE_ENV}.enc.json. Docker pull auto supports this format so that we can have encrypted config json.
 
 Docker pull auto supports running a command before reading config json. We will add a command to decrypt config.enc.json. You can add command in key **runCommandBeforeConfigRead**. Your updated config.json will look like:
 

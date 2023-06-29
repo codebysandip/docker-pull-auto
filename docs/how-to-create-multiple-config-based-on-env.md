@@ -4,7 +4,7 @@ docker pull auto uses NODE_ENV environment variable for multiple config manageme
 
 1. Create a config.development.json in root
 2. Now you will need to pass development value in NODE_ENV environment variable.
-3. You will need to add two scripst in package.json in scripts section. One for local development and one for build
+3. You will need to add two scripts in package.json in scripts section. One for local development and one for build
 
    ```bash
    "start:development": "cross-env NODE_ENV=development nest start --watch --webpack --webpackPath ./config/nest-webpack.config.js"
@@ -17,6 +17,6 @@ docker pull auto uses NODE_ENV environment variable for multiple config manageme
    npm run start:development
    ```
 
-5. This project supports auto deployment on push. For ease already have workflow config in folder .gitub/workflows with name build-and-push-dev.yml.bak. Just rename this file. If you compare build-and-push.yml with build-and-push-dev.yml.bak then you will find, we only changed build command from `npm run build` to `npm run build:development`
+5. This project supports auto deployment on push. For ease already have workflow config in folder .github/workflows with name build-and-push-dev.yml.bak. Just rename this file. If you compare build-and-push.yml with build-and-push-dev.yml.bak then you will find, we only changed build command from `npm run build` to `npm run build:development`
 
 NOTE: If you will not pass NODE_ENV then config.json will use as config file

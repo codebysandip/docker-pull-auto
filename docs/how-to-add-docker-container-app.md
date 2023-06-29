@@ -53,7 +53,7 @@ We put different tags based on environment like for development environment, we 
 
 ### **app.docker.hostedOn**
 
-hostedOn is requirement parameter to identify where your docker images hosted on. Valid values are aws, docker-hub, github and azure. Currenty we are supporting only for docker hub but soon will support all mentoined.
+hostedOn is requirement parameter to identify where your docker images hosted on. Valid values are aws, docker-hub, github and azure. Currently we are supporting only for docker hub but soon will support all mentioned.
 
 ### **app.docker.name**
 
