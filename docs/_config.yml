@@ -8,12 +8,12 @@ links:
   # - text: Getting Started
   #   link: /getting-started.html
   - text: How to add docker container app for auto pull in config json
-    link: /how-to-add-docker-container-app.html
+    link: ./how-to-add-docker-container-app.html
   - text: What is HOOK_SECRET and How to create HOOK_SECRET
-    link: /how-to-create-hook-secret.html
+    link: ./how-to-create-hook-secret.html
   - text: How to create multiple config based on environment
-    link: /how-to-create-multiple-config-based-on-env.html
+    link: ./how-to-create-multiple-config-based-on-env.html
   - text: How to encrypt config.json
-    link: /how-to-encrypt-config-json.html
-  - text: How to add environment file for Docker App/ Config App
-    link: /how-to-add-environment-file-for-config-app.html
+    link: ./how-to-encrypt-config-json.html
+  - text: How to add environment file for Docker App / Config App
+    link: ./how-to-add-environment-file-for-config-app.html

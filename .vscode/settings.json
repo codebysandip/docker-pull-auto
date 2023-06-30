@@ -14,5 +14,8 @@
   "editor.tabSize": 2,
   "[json]": {
     "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
   }
 }
