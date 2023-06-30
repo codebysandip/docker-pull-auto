@@ -7,64 +7,9 @@ You add a config.json file for your docker containers which need to pull auto. W
 
 ![High level diagram of docker pull auto](./assets/docker-auto-pull-flow.drawio.png)
 
-## Installation
-
-```bash
-$ npm install
-```
-
-## Running the app
-
-- Create a .env file at the root with following content:
-
-  ```bash
-  HOOK_SECRET=yourSecret;
-  DOCKER_USERNAME=yourUser;
-  DOCKER_TOKEN=yourToken;
-  PORT=7002;
-  ```
-
-- Add a config.json for your app(s). You can take reference from [config.example.json](./config.example.json)
-- Run application
-
-  ```bash
-  # development
-  $ npm run start
-
-  # watch mode
-  $ npm run start:dev
-
-  # production mode
-  $ npm run start:prod
-  ```
-
-## Build
-
-```bash
-# Build the project
-$ npm run build
-```
-
-<!-- ## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-``` -->
-
-## Pre requisites for server
-
-- Docker
-- Node 16.x or higher
-- pm2 (`sudo npm i -g pm2`)
-
 ## Useful Links
+
+- #### [Getting Started](./getting-started.md)
 
 - #### [How to add docker container app for auto pull in config json](./how-to-add-docker-container-app.md)
 

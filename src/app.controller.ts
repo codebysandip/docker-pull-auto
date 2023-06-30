@@ -1,10 +1,7 @@
 import { Body, Controller, Post, Req, Res } from "@nestjs/common";
 import { execSync } from "child_process";
-import { parse } from "comment-json";
 import { Request, Response } from "express";
-import { existsSync, readFileSync } from "fs";
-import { join } from "path";
-import { Config, DockerHostedOn, WorkflowPayload, WorkflowStatus } from "./app.model";
+import { DockerHostedOn, WorkflowPayload, WorkflowStatus } from "./app.model";
 import { AppService } from "./app.service";
 
 @Controller()
@@ -29,7 +26,7 @@ export class AppController {
     const { html_url } = payload.repository;
 
     if (status === WorkflowStatus.completed) {
-      const config = this.getConfig();
+      const config = this.appService.getConfig();
       if (!config) {
         res.status(500).json({
           error: "Config not available",
@@ -119,40 +116,6 @@ export class AppController {
       }
     } else {
       res.status(200).json({});
-    }
-  }
-
-  /**
-   * reads config.json
-   * @returns Config
-   */
-  getConfig(commandToRun?: string): Config | null {
-    if (commandToRun) {
-      execSync(commandToRun);
-    }
-    const configFile = process.env.NODE_ENV ? `config.${process.env.NODE_ENV}.json` : "config.json";
-    const configEncFile = process.env.NODE_ENV ? `config.${process.env.NODE_ENV}.enc.json` : "config.enc.json";
-    const configEncFilePath = join(process.cwd(), configEncFile);
-    let configPath = join(process.cwd(), configFile);
-    if (!commandToRun && existsSync(configEncFilePath)) {
-      configPath = configEncFilePath;
-    }
-    if (!existsSync(configPath)) {
-      console.error("config.json doesn't exist on path ", configPath);
-      return null;
-    }
-    const configStr = readFileSync(configPath, { encoding: "utf8" });
-    if (configStr) {
-      try {
-        const config: Config = parse(configStr) as any;
-        if (config.runCommandBeforeConfigRead && !commandToRun) {
-          return this.getConfig(config.runCommandBeforeConfigRead);
-        }
-        return config;
-      } catch (err) {
-        console.error("Invalid config json!!", err);
-        return null;
-      }
     }
   }
 }

@@ -1,10 +1,13 @@
 import { HttpService } from "@nestjs/axios";
 import { Injectable } from "@nestjs/common";
 import { exec, execSync } from "child_process";
+import { parse } from "comment-json";
 import { createHmac } from "crypto";
+import { existsSync, readFileSync } from "fs";
+import { join } from "path";
 import { Observable, of } from "rxjs";
 import { catchError, mergeMap } from "rxjs/operators";
-import { ConfigApp, DockerApp, DockerTagResponse } from "./app.model";
+import { Config, ConfigApp, DockerApp, DockerTagResponse, WorkflowStatus } from "./app.model";
 
 @Injectable()
 export class AppService {
@@ -101,6 +104,40 @@ export class AppService {
   }
 
   /**
+   * reads config.json
+   * @returns Config
+   */
+  getConfig(commandToRun?: string): Config | null {
+    if (commandToRun) {
+      execSync(commandToRun);
+    }
+    const configFile = process.env.NODE_ENV ? `config.${process.env.NODE_ENV}.json` : "config.json";
+    const configEncFile = process.env.NODE_ENV ? `config.${process.env.NODE_ENV}.enc.json` : "config.enc.json";
+    const configEncFilePath = join(process.cwd(), configEncFile);
+    let configPath = join(process.cwd(), configFile);
+    if (!commandToRun && existsSync(configEncFilePath)) {
+      configPath = configEncFilePath;
+    }
+    if (!existsSync(configPath)) {
+      console.error("config.json doesn't exist on path ", configPath);
+      return null;
+    }
+    const configStr = readFileSync(configPath, { encoding: "utf8" });
+    if (configStr) {
+      try {
+        const config: Config = parse(configStr) as any;
+        if (config.runCommandBeforeConfigRead && !commandToRun) {
+          return this.getConfig(config.runCommandBeforeConfigRead);
+        }
+        return config;
+      } catch (err) {
+        console.error("Invalid config json!!", err);
+        return null;
+      }
+    }
+  }
+
+  /**
    * Get running docker containers on system. This method uses command docker ps --format json
    * @returns running docker containers
    */
@@ -133,20 +170,40 @@ export class AppService {
       console.log(`Running command: ${app.runCommandBeforeAccessApp}`);
       execSync(app.runCommandBeforeAccessApp);
     }
-    let dockeRunScript = `docker run --name ${app.docker.name} -d -p ${app.docker.port} -it ${imageWithTag} --rm`;
+    let dockerRunScript = `docker run --name ${app.docker.name} -itd -p ${app.docker.port}`;
     if (app.docker.env && typeof app.docker.env === "object") {
       console.log("Reading env from app.docker.env");
       Object.keys(app.docker.env).forEach((envKey) => {
-        dockeRunScript += ` -e ${envKey}=${app.docker.env[envKey]}`;
+        dockerRunScript += ` --env "${envKey}=${app.docker.env[envKey]}"`;
       });
     }
 
     if (app.docker.envFile) {
-      dockeRunScript += ` --env-file ${app.docker.envFile}`;
+      dockerRunScript += ` --env-file ${app.docker.envFile}`;
     }
 
+    dockerRunScript += ` ${imageWithTag}`;
+
     console.log(`Running docker image ${imageWithTag}`);
-    console.log(`with command: ${dockeRunScript}`);
-    execSync(dockeRunScript);
+    console.log(`with command: ${dockerRunScript}`);
+    execSync(dockerRunScript);
+  }
+
+  dockerUpAppManually(url: string, branch: string) {
+    const payload = {
+      workflow_run: {
+        status: WorkflowStatus.completed,
+        head_branch: branch,
+      },
+      repository: {
+        html_url: url,
+      },
+    };
+    const signature = createHmac("sha256", process.env.HOOK_SECRET).update(JSON.stringify(payload)).digest("hex");
+    const header = `sha256=${signature}`;
+
+    return this.httpService.post(`http://localhost:${process.env.PORT || 7002}/api/github/workflow`, payload, {
+      headers: { "x-hub-signature-256": header },
+    });
   }
 }

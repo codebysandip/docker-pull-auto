@@ -1,6 +1,6 @@
 # How to add docker container app for auto pull in config json
 
-All the docker apps which needs to pull automatically reside in config.js. This project already have [config.example.json](../config.example.json) for example with comments added. Below is a example config.json
+All the docker apps which needs to pull automatically reside in config.js. This project already have [config.example.json](https://raw.githubusercontent.com/codebysandip/docker-pull-auto/main/config.example.json) for example with comments added. Below is a example config.json
 
 ```json
 {
