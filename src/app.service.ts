@@ -5,9 +5,9 @@ import { parse } from "comment-json";
 import { createHmac } from "crypto";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
-import { Observable, of } from "rxjs";
-import { catchError, mergeMap } from "rxjs/operators";
-import { Config, ConfigApp, DockerApp, DockerTagResponse, WorkflowStatus } from "./app.model";
+import { Observable, of, throwError } from "rxjs";
+import { catchError, map, mergeMap } from "rxjs/operators";
+import { Config, ConfigApp, DockerApp, DockerAuthResponse, DockerTagResponse, WorkflowStatus } from "./app.model";
 
 @Injectable()
 export class AppService {
@@ -26,17 +26,71 @@ export class AppService {
   }
 
   /**
+   * Get token from auth.docker.io
+   * @param app ConfigApp from config.json
+   * @returns token
+   */
+  generateDockerToken(app: ConfigApp) {
+    return this.httpService
+      .get<DockerAuthResponse>(
+        `https://${process.env.DOCKER_USERNAME}:${process.env.DOCKER_TOKEN}@auth.docker.io/token?service=registry.docker.io&scope=repository:${app.docker.image}:pull`,
+      )
+      .pipe(
+        catchError((err) => {
+          console.error("Error in getting token from  auth.docker.io. Error: ", err);
+          return throwError(() => err);
+        }),
+        map((res) => res.data.token),
+      );
+  }
+
+  /**
+   * Get tags from index.docker.io
+   * @param app Config App
+   * @param token docker auth token
+   * @param last last value of response. Used to fetch next values
+   * @returns tags
+   */
+  getTags(app: ConfigApp, token?: string, last?: string): Observable<DockerTagResponse> {
+    let url = `https://index.docker.io/v2/${app.docker.image}/tags/list?n=10`;
+    if (last) {
+      url += `&last=${last}`;
+    }
+    let token$: Observable<string>;
+    if (!token) {
+      token$ = this.generateDockerToken(app);
+    } else {
+      token$ = of(token);
+    }
+    return token$.pipe(
+      mergeMap((t) => {
+        return this.httpService.get<DockerTagResponse>(url, { headers: { Authorization: `Bearer ${t}` } }).pipe(
+          catchError((err) => {
+            console.error("Error in getting tags from index.docker.io. Error: ", err);
+            return throwError(() => err);
+          }),
+          mergeMap((resp) => {
+            if (resp.headers.link) {
+              return this.getTags(app, token, resp.data.tags.reverse()[0]);
+            }
+            return of(resp.data);
+          }),
+        );
+      }),
+    );
+  }
+
+  /**
    * Get tag from docker hub and pull latest docker image
    * @param app ConfigApp which reside in config.json
    * @returns image with tag string in case of success. In case of failure returns { error: string }
    */
   getTagAndPullImage(app: ConfigApp): Observable<string | { error: string } | { message: string }> {
-    const url = `https://registry.hub.docker.com/v2/repositories/${app.docker.image}/tags?page_size=20&sort=last_updated`;
-    return this.httpService.get<DockerTagResponse>(url).pipe(
+    return this.getTags(app).pipe(
       mergeMap((resp) => {
-        if (resp.data.results.length) {
+        if (resp.tags.length) {
           const regex = new RegExp(app.docker.tagRegex);
-          const dockerTag = resp.data.results.find((t) => regex.test(t.name));
+          const dockerTag = resp.tags.find((t) => regex.test(t));
           if (!dockerTag) {
             const error = `No docker image found for regex ${app.docker.tagRegex}`;
             console.warn(error);
@@ -165,6 +219,11 @@ export class AppService {
     });
   }
 
+  /**
+   * Run docker image
+   * @param app Config App
+   * @param imageWithTag Image with tag
+   */
   dockerRun(app: ConfigApp, imageWithTag: string) {
     if (app.runCommandBeforeAccessApp) {
       console.log(`Running command: ${app.runCommandBeforeAccessApp}`);
@@ -189,6 +248,12 @@ export class AppService {
     execSync(dockerRunScript);
   }
 
+  /**
+   * Manually up docker apps from config
+   * @param url repository url
+   * @param branch branch name
+   * @returns axios request
+   */
   dockerUpAppManually(url: string, branch: string) {
     const payload = {
       workflow_run: {

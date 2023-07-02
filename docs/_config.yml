@@ -5,8 +5,8 @@ google_analytics: G-JEDLKV3VKC
 plugins:
   - jekyll-remote-theme # add this line to the plugins list if you already have one
 links:
-  # - text: Getting Started
-  #   link: /getting-started.html
+  - text: Getting Started
+    link: ./getting-started.html
   - text: How to add docker container app for auto pull in config json
     link: ./how-to-add-docker-container-app.html
   - text: What is HOOK_SECRET and How to create HOOK_SECRET

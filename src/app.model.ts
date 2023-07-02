@@ -314,11 +314,20 @@ export interface ConfigDocker {
   envFile?: string;
 }
 
+export interface DockerAuthResponse {
+  token: string;
+  access_token: string;
+  expires_in: number;
+  issued_at: string;
+}
+
 export interface DockerTagResponse {
-  count: number;
-  next: string;
-  previous: any;
-  results: DockerTagResult[];
+  // count: number;
+  // next: string;
+  // previous: any;
+  // results: DockerTagResult[];
+  name: string;
+  tags: string[];
 }
 
 export interface DockerTagResult {
