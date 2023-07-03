@@ -1,25 +1,21 @@
 {
 	"apps": [
 		{
-			"repo": {
-				"url": "https://github.com/codebysandip/react-ssr-doc",
-				"branch": "main"
-			},
 			"docker": {
-				"image": "sandipj/react-ssr-doc",
-				"tagRegex": "prod-[\\da-z]{8,8}-\\d{9,11}$",
-				"hostedOn": "docker-hub",
-				"name": "react-ssr-doc",
-				"port": "6500:5000",
+				"image": "ENC[AES256_GCM,data:gPf3Kh4PN+zEKLmmg8voNyO5d7Uy,iv:3bJQZL5oz6boIlqNdvYzWo0qHxmNs8E1natMiw+QWbE=,tag:VkwlqiQOLFmr2fC9nkZArQ==,type:str]",
+				"tagRegex": "ENC[AES256_GCM,data:Lgm1X4opNb/naT8zDMrZoNm8bPokQTso9PLP,iv:cecKYvUsG6MDw034sqks4tXqMMLpkUJ0HV7SIm4ogA8=,tag:+chLuLFO0zyfg/vmCwFfzQ==,type:str]",
+				"hostedOn": "ENC[AES256_GCM,data:YXDhTOcbHsl5vQ==,iv:LEFdfviPg/bemtR/9jYGB0+XK4FB/mreYNBlSLYvbvU=,tag:kb3GcmZOFBA22tLB0UwZnQ==,type:str]",
+				"name": "ENC[AES256_GCM,data:cIJkJ533f74qb6qjUQ==,iv:JW+NyYNZfO+1bg/M2Qx1gANs9uOwffTERRzJie/4xBA=,tag:KMAKH4MlfzDCUujS0n7UBw==,type:str]",
+				"port": "ENC[AES256_GCM,data:NSgqTehpcDbb,iv:igo2sPV3yahipOmavZffaYnmq3anIB3D4aHskqbmCKw=,tag:ZUaCr+B+vSkxM0qxXaoYeg==,type:str]",
 				"env": {
-					"mySecret": "ENC[AES256_GCM,data:K5A5P/w5AIm1i8TlygcB,iv:H9Bfac9jFid3gYSLtn6JjL+6aPJ7x1TlGxQFsq7usB4=,tag:QKTS+gydDf6CTYXONnw3Sg==,type:str]"
+					"mySecret": "ENC[AES256_GCM,data:ThUDhXpXT76/BPsjPoit,iv:RAZhSE8V4cIsa6vRj9dXiDV4fnkiQO9bX7hW4YfAMG8=,tag:3Ryma4FK+IhBevjCStUICQ==,type:str]"
 				},
-				"envFile": "ENC[AES256_GCM,data:u3bf7E/MjhRU8jLD9ArK8UUnVT9RHAN9ixNdnaS/q67pMw==,iv:2rtBEEM0dKmXnXFqAZ/4RYS9gM+THhVwYspxmUv2TNU=,tag:jQyyiAmii2MuaPU99VRQsQ==,type:str]"
+				"envFile": "ENC[AES256_GCM,data:brivBHW2+lidrwWFW8FmaVRw6iKN8cDHpswMbDAlqjfZag==,iv:EGEq0A4SujwDRiBTfBzySfu125wm+tZvlLCnzCpx4Nk=,tag:4iopE+br3+n2dtYFk8hQMw==,type:str]"
 			},
-			"runCommandBeforeAccessApp": "sops -d env/react-ssr-doc/.env.development.enc \u003e env/react-ssr-doc/.env.development"
+			"runCommandBeforeAccessApp": "ENC[AES256_GCM,data:Zfx/H6zqziIpPZN+PzMQLBOoYs0AimDquVEtlU+oFhoW7U0XxEYCSLg0eizasdKFXD231bSyn81b5cPXfOw9A3zoT2ZStqMkMT2zSU8Pmx54MnM=,iv:RNBdT/yXZk0+wGWxUbfv3gg8rzSr0n7mEAF/gOaD/9s=,tag:U1tVbZaiO/MJ9z9y1TMAzw==,type:str]"
 		}
 	],
-	"runCommandBeforeConfigRead": "sops -d config.enc.json \u003e config.json",
+	"runCommandBeforeConfigRead": "ENC[AES256_GCM,data:e1Q7+gTkVqDngtq1+8n397k8kW7c2P+uB3mOPThlOLruOgzu2g==,iv:l6Nf1oF0egCpyBmpp9ck4mGxA2bJ6EkXgRL2TpBUkuQ=,tag:ToiQ4f/+XlIAmRsgh1RkjA==,type:str]",
 	"sops": {
 		"kms": null,
 		"gcp_kms": null,
@@ -28,13 +24,13 @@
 		"age": [
 			{
 				"recipient": "age1tsjl8t74tp2dsaaf7j246ndmhcd8hzt82vnpkk8g5a8hqvtl5y9s5y9vsf",
-				"enc": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBnNE5GZXpHUW5aOVRCY2p0\nSGlXeXcvbCtYUXVya2xFdjZ5ajlnNVVUNGk0CituMFVoWHVITEk2WG9CZE80WVBy\nUXovWXBldks5RDBpdjU1VjY2RE9YTVUKLS0tIGUrSUNWRkh3TWxNbGZTTXZaSzRP\nOW9TWENZOXFROTNJUGEyNHdTRm9qT0kKX1dCNXSmrbEWWCRtlKy6MUVK4RLpMUhc\nLqowyR0oeQdsSgAp3B8tUsnTJpZU0bgvGQh5GRPmd5bqyo5XqG1PlA==\n-----END AGE ENCRYPTED FILE-----\n"
+				"enc": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB5UEFOall0ajJ2U29yRXh4\nUmJiWmVncFpsMHErUmpXR0dOUndVZ3NlOW13CitOVGVadzFaUW5tNHN6LytxV0FO\nR0kyRFlqOHBxa2JNTjVRMjFsVWhVekkKLS0tIExUWmtXVnlkb1E5TVlYVklFRFMx\ncnI4T2Uzb3ZFcWtpNHlnRjNMSUlGd1kKUAW1ol+ZjYapVGh3nC4rXE/8muHxQSX/\n8NhRFLaigkDPGL5if4WJ7QIpZHPNiqvR/R9YJHKTwSMkT9fqLWYu/Q==\n-----END AGE ENCRYPTED FILE-----\n"
 			}
 		],
-		"lastmodified": "2023-06-29T07:34:07Z",
-		"mac": "ENC[AES256_GCM,data:woG5SIw48o1RXSNZql8Id/W80d4Hqu+SOZj84XGbYw49Vk62mgwbzNOvBtBkiknQI0vUsJ291fzX95ftWQasu6Z67ICKRMHJxVp9uGa6uGCfMKvTd11YCcb+PPyx+cJcNJutzj3DSEcdGfA7jPHO7AeJfzCD9gN9z6KyGJKeNro=,iv:DEbnELMD5UTJoKho4/4xzdRItPEgqCRyuviRHMHdEH0=,tag:bGGFu1zEUjou/i31UHPibw==,type:str]",
+		"lastmodified": "2023-07-03T17:32:55Z",
+		"mac": "ENC[AES256_GCM,data:0oZcxUoTdxytfW6eISpUQyHuQ1sRMluoSzdNQr9LLxU0ar8RwVqgVBMHagvdTvdVWawdw3noYWZ0TeCRlDvumirLgUW7Pid3CSqsO3X9OtrIqi/YuDdPMqda6WDRHuesRPVFCsZjcCU1dX9yyKMIMCZVoJorTWaM8XREX+3xlcQ=,iv:89+U99zrMwlomQlBMgx6ApnI0H8m14rEGZk9+D1GrFI=,tag:h3vOscYPIjwRpTzb0IEQNA==,type:str]",
 		"pgp": null,
-		"encrypted_regex": "env",
+		"unencrypted_suffix": "_unencrypted",
 		"version": "3.7.3"
 	}
 }

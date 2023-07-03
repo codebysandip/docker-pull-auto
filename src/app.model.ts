@@ -1,3 +1,5 @@
+import { IsNotEmpty } from "class-validator";
+
 export interface WorkflowPayload {
   action: string;
   workflow_run: WorkflowRun;
@@ -245,10 +247,6 @@ export interface Config {
 
 export interface ConfigApp {
   /**
-   * Repository info
-   */
-  repo: ConfigRepo;
-  /**
    * Docker info
    */
   docker: ConfigDocker;
@@ -257,19 +255,6 @@ export interface ConfigApp {
    * @example decrypt env file before docker app access env file
    */
   runCommandBeforeAccessApp?: string;
-}
-
-export interface ConfigRepo {
-  /**
-   * Repository url
-   * @example https://github.com/codebysandip/react-ssr-doc
-   */
-  url: string;
-  /**
-   * branch for which docker pull will work
-   * @example development
-   */
-  branch: string;
 }
 
 export enum DockerHostedOn {
@@ -361,4 +346,12 @@ export interface DockerImage {
   status: string;
   last_pulled: string;
   last_pushed: string;
+}
+
+export class HookPayload {
+  @IsNotEmpty()
+  dockerImage: string;
+
+  @IsNotEmpty()
+  dockerImageTag: string;
 }

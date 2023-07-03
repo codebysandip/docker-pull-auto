@@ -96,44 +96,9 @@ export class AppService {
             console.warn(error);
             return of({ error });
           }
-          const imageWithTag = `${app.docker.image}:${dockerTag.name}`;
+          const imageWithTag = `${app.docker.image}:${dockerTag}`;
           console.log(`Docker image ${imageWithTag}`);
-          return new Observable<string | { error: string } | { message: string }>((obs) => {
-            console.log("pulling docker image ", imageWithTag);
-            let respSent = false;
-            // github hook timeouts after 10 sec
-            const timeoutId = setTimeout(() => {
-              if (respSent) {
-                return;
-              }
-              obs.next({ message: "Docker pulling image. Check server log for more information" });
-              respSent = true;
-            }, 8000);
-
-            exec(`docker pull ${imageWithTag}`, (err, stdout, stderr) => {
-              if (!respSent) {
-                clearTimeout(timeoutId);
-              }
-              respSent = true;
-              if (err) {
-                const error = `Error in pulling image ${imageWithTag}. Error: ${err.message}`;
-                console.error(error, err);
-                obs.next({ error });
-                obs.complete();
-                return;
-              }
-              if (stderr) {
-                const error = `Error in pulling image ${imageWithTag}. Error: ${stderr}`;
-                console.error(error, err);
-                obs.next({ error });
-                obs.complete();
-                return;
-              }
-              console.log(stdout);
-              obs.next(imageWithTag);
-              obs.complete();
-            });
-          });
+          return this.pullImage(imageWithTag);
         }
         return of({ error: "Empty result from docker registry api" });
       }),
@@ -145,12 +110,62 @@ export class AppService {
     );
   }
 
+  /**
+   * Pull image from docker
+   * @param imageWithTag image:tag
+   * @returns Observable
+   */
+  pullImage(imageWithTag: string, wait = true) {
+    console.log("pulling docker image ", imageWithTag);
+    return new Observable<string | { error: string } | { message: string }>((obs) => {
+      console.log("pulling docker image ", imageWithTag);
+      let respSent = false;
+      // github hook timeouts after 10 sec
+      const timeoutId = setTimeout(
+        () => {
+          if (respSent) {
+            return;
+          }
+          obs.next({ message: "Docker pulling image. Check server log for more information" });
+          respSent = true;
+        },
+        wait ? 8000 : 0,
+      );
+
+      exec(`docker pull ${imageWithTag}`, (err, stdout, stderr) => {
+        if (!respSent) {
+          clearTimeout(timeoutId);
+        }
+        respSent = true;
+        if (err) {
+          const error = `Error in pulling image ${imageWithTag}. Error: ${err.message}`;
+          console.error(error, err);
+          obs.next({ error });
+          obs.complete();
+          return;
+        }
+        if (stderr) {
+          const error = `Error in pulling image ${imageWithTag}. Error: ${stderr}`;
+          console.error(error, err);
+          obs.next({ error });
+          obs.complete();
+          return;
+        }
+        console.log(stdout);
+        obs.next(imageWithTag);
+        obs.complete();
+      });
+    });
+  }
+
   dockerLogin() {
+    console.log("docker login!!");
     return new Promise<string>((resolve) => {
       exec(`docker login -u ${process.env.DOCKER_USERNAME} -p ${process.env.DOCKER_TOKEN}`, (err) => {
         if (err) {
           resolve(`Unable to login docker. Error: ${err.message}`);
         } else {
+          console.log("docker login success!!");
           resolve("");
         }
       });
@@ -198,23 +213,29 @@ export class AppService {
   getRunningDockerContainers() {
     return new Promise<DockerApp[]>((resolve) => {
       const appsRunning: DockerApp[] = [];
-      exec("docker ps --format json", (err, stdout, stderr) => {
+      exec('docker ps --format "{{json .}}"', (err, stdout, stderr) => {
         if (err) {
-          console.error("Error in installing package.json!!", err);
+          console.error("Error in docker ps!!", err);
           resolve(appsRunning);
 
           return;
         }
         if (stderr) {
-          console.error("StdError in installing package.json!!", stderr);
+          console.error("StdError in docker ps!!", stderr);
           resolve(appsRunning);
           return;
         }
         stdout
           .split(/\n/g)
           .filter((str) => !!str)
-          .forEach((str) => appsRunning.push(JSON.parse(str)));
+          .forEach((str) => {
+            try {
+              const obj = JSON.parse(str);
+              appsRunning.push(obj);
+            } catch {}
+          });
         resolve(appsRunning);
+        console.log(appsRunning);
       });
     });
   }

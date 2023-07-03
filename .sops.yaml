@@ -1,0 +1,15 @@
+creation_rules:
+  - path_regex: ".*development.env"
+    input_type: dotenv
+    output_type: dotenv
+    age: age1tsjl8t74tp2dsaaf7j246ndmhcd8hzt82vnpkk8g5a8hqvtl5y9s5y9vsf
+
+  - path_regex: ".env"
+    input_type: dotenv
+    output_type: dotenv
+    age: age1tsjl8t74tp2dsaaf7j246ndmhcd8hzt82vnpkk8g5a8hqvtl5y9s5y9vsf
+
+  - path_regex: ".*.json"
+    input_type: json
+    output_type: json
+    age: age1tsjl8t74tp2dsaaf7j246ndmhcd8hzt82vnpkk8g5a8hqvtl5y9s5y9vsf
