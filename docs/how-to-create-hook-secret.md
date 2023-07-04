@@ -1,18 +1,10 @@
 ## What is HOOK_SECRET and How to create HOOK_SECRET
 
-HOOK_SECRET is secret value which used by github to create HMAC of payload. Github sends this HMAC in header x-hub-signature-256.  
-When docker-pull-auto receives request from github, it validates request body with the HOOK_SECRET.  
-So, HOOK_SECRET should be same on github and docker-pull-auto.  
-Now follow these steps to set HOOK_SECRET (for example I'm going to use my open source [react-ssr-doc](https://github.com/codebysandip/react-ssr-doc) project):
+HOOK_SECRET is secret value which used by [docker pull auto action](https://github.com/marketplace/actions/docker-pull-auto-action) to create HMAC of payload. [docker pull auto action](https://github.com/marketplace/actions/docker-pull-auto-action) sends this HMAC in header x-hub-signature-256.  
+When docker-pull-auto receives request from [docker pull auto action](https://github.com/marketplace/actions/docker-pull-auto-action), it validates request with the HOOK_SECRET which reside in .env file.  
+So, HOOK_SECRET should be same on [docker pull auto action](https://github.com/marketplace/actions/docker-pull-auto-action) and [docker-pull-auto](https://github.com/codebysandip/docker-pull-auto).  
+You can store HOOK_SECRET in [github secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets).
 
-- Navigate to your github repository on web and click on Settings
-  ![React SSR Doc Repository Page](./docs/assets/repo-page.png)
-- On Settings Page, Click on Webhooks
-- Click on Add Webhook
-- In Payload url, enter url in format https://example.com/api/github/workflow
-  - For local development, You can use [ngrok](https://ngrok.com/) to setup a domain for your local port
-- In Secret, add HOOK_SECRET
-- In the section, Which events would you like to trigger this webhook? Select **Let me select individual events.**
-- Now check only **Workflow runs** and Save the changes
+If you cloned docker-pull-auto repo, you will find, .env doesn't exist. This is because .env file contains sensitive information. But you will find enc.env file which is encrypted using sops with age encryption.
 
-That's all, Whenever your workflow will run, docker-pull-auto will receive a request and will do automation of docker pull for you
+It's safe to commit encrypted content but remember to generate new age key.txt and don't commit key.txt.

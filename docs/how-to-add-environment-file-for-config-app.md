@@ -1,24 +1,20 @@
 # how to add environment file for Docker App/ Config App
 
-It's common to have environment file for backend applications. Env file (.env) holds secrets of application. This project have env folder for environment variables. You can add a folder per application to organise in a better way. In newly created folder you can add env file.
+It's common to have environment file for backend applications. Env file (.env) holds secrets of application. This project have env folder for environment variables. You can add a folder per application to organize in a better way. In newly created folder you can add env file.
 
-After adding env file let say we added env/react-ssr-doc/.env.development file. we can refer env file in config json like this:
+After adding env file let say we added env/react-ssr-doc/development.env file. we can refer env file in config json like this:
 
 ```json
 {
   "apps": [
     {
-      "repo": {
-        "url": "https://github.com/codebysandip/react-ssr-doc",
-        "branch": "main"
-      },
       "docker": {
         "image": "sandipj/react-ssr-doc",
         "tagRegex": "prod-[\\da-z]{8,8}-\\d{9,11}$",
         "hostedOn": "docker-hub",
         "name": "react-ssr-doc",
         "port": "6500:5000",
-        "envFile": "env/react-ssr-doc/.env.development"
+        "envFile": "env/react-ssr-doc/development.env"
       }
     }
   ]
@@ -33,19 +29,15 @@ But we should not a commit a env file having raw values if it containing secret 
 {
   "apps": [
     {
-      "repo": {
-        "url": "https://github.com/codebysandip/react-ssr-doc",
-        "branch": "main"
-      },
       "docker": {
         "image": "sandipj/react-ssr-doc",
         "tagRegex": "prod-[\\da-z]{8,8}-\\d{9,11}$",
         "hostedOn": "docker-hub",
         "name": "react-ssr-doc",
         "port": "6500:5000",
-        "envFile": "env/react-ssr-doc/.env.development"
+        "envFile": "env/react-ssr-doc/development.env"
       },
-      "runCommandBeforeAccessApp": "sops -d env/react-ssr-doc/.env.development.enc > env/react-ssr-doc/.env.development"
+      "runCommandBeforeAccessApp": "sops -d env/react-ssr-doc/enc.development.env > env/react-ssr-doc/development.env"
     }
   ]
 }

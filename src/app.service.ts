@@ -1,13 +1,14 @@
 import { HttpService } from "@nestjs/axios";
 import { Injectable } from "@nestjs/common";
 import { exec, execSync } from "child_process";
+import { plainToClass } from "class-transformer";
+import { ValidationError, validate } from "class-validator";
 import { parse } from "comment-json";
 import { createHmac } from "crypto";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
-import { Observable, of, throwError } from "rxjs";
-import { catchError, map, mergeMap } from "rxjs/operators";
-import { Config, ConfigApp, DockerApp, DockerAuthResponse, DockerTagResponse, WorkflowStatus } from "./app.model";
+import { Observable } from "rxjs";
+import { Config, ConfigApp, DockerApp, DockerImage, PullImageResponse } from "./app.model";
 
 @Injectable()
 export class AppService {
@@ -26,133 +27,40 @@ export class AppService {
   }
 
   /**
-   * Get token from auth.docker.io
-   * @param app ConfigApp from config.json
-   * @returns token
-   */
-  generateDockerToken(app: ConfigApp) {
-    return this.httpService
-      .get<DockerAuthResponse>(
-        `https://${process.env.DOCKER_USERNAME}:${process.env.DOCKER_TOKEN}@auth.docker.io/token?service=registry.docker.io&scope=repository:${app.docker.image}:pull`,
-      )
-      .pipe(
-        catchError((err) => {
-          console.error("Error in getting token from  auth.docker.io. Error: ", err);
-          return throwError(() => err);
-        }),
-        map((res) => res.data.token),
-      );
-  }
-
-  /**
-   * Get tags from index.docker.io
-   * @param app Config App
-   * @param token docker auth token
-   * @param last last value of response. Used to fetch next values
-   * @returns tags
-   */
-  getTags(app: ConfigApp, token?: string, last?: string): Observable<DockerTagResponse> {
-    let url = `https://index.docker.io/v2/${app.docker.image}/tags/list?n=10`;
-    if (last) {
-      url += `&last=${last}`;
-    }
-    let token$: Observable<string>;
-    if (!token) {
-      token$ = this.generateDockerToken(app);
-    } else {
-      token$ = of(token);
-    }
-    return token$.pipe(
-      mergeMap((t) => {
-        return this.httpService.get<DockerTagResponse>(url, { headers: { Authorization: `Bearer ${t}` } }).pipe(
-          catchError((err) => {
-            console.error("Error in getting tags from index.docker.io. Error: ", err);
-            return throwError(() => err);
-          }),
-          mergeMap((resp) => {
-            if (resp.headers.link) {
-              return this.getTags(app, token, resp.data.tags.reverse()[0]);
-            }
-            return of(resp.data);
-          }),
-        );
-      }),
-    );
-  }
-
-  /**
-   * Get tag from docker hub and pull latest docker image
-   * @param app ConfigApp which reside in config.json
-   * @returns image with tag string in case of success. In case of failure returns { error: string }
-   */
-  getTagAndPullImage(app: ConfigApp): Observable<string | { error: string } | { message: string }> {
-    return this.getTags(app).pipe(
-      mergeMap((resp) => {
-        if (resp.tags.length) {
-          const regex = new RegExp(app.docker.tagRegex);
-          const dockerTag = resp.tags.find((t) => regex.test(t));
-          if (!dockerTag) {
-            const error = `No docker image found for regex ${app.docker.tagRegex}`;
-            console.warn(error);
-            return of({ error });
-          }
-          const imageWithTag = `${app.docker.image}:${dockerTag}`;
-          console.log(`Docker image ${imageWithTag}`);
-          return this.pullImage(imageWithTag);
-        }
-        return of({ error: "Empty result from docker registry api" });
-      }),
-      catchError((err) => {
-        const error = `Error in fetching tags from registry. Error ${err}`;
-        console.error(error);
-        return of({ error });
-      }),
-    );
-  }
-
-  /**
    * Pull image from docker
    * @param imageWithTag image:tag
    * @returns Observable
    */
-  pullImage(imageWithTag: string, wait = true) {
+  pullImage(imageWithTag: string) {
     console.log("pulling docker image ", imageWithTag);
-    return new Observable<string | { error: string } | { message: string }>((obs) => {
-      console.log("pulling docker image ", imageWithTag);
+    return new Observable<PullImageResponse>((obs) => {
       let respSent = false;
       // github hook timeouts after 10 sec
-      const timeoutId = setTimeout(
-        () => {
-          if (respSent) {
-            return;
-          }
-          obs.next({ message: "Docker pulling image. Check server log for more information" });
-          respSent = true;
-        },
-        wait ? 8000 : 0,
-      );
+      const timeoutId = setTimeout(() => {
+        obs.next({ message: "Docker pulling image. Check server log for more information", pullCompleted: false });
+        respSent = true;
+      }, 8000);
 
       exec(`docker pull ${imageWithTag}`, (err, stdout, stderr) => {
         if (!respSent) {
           clearTimeout(timeoutId);
         }
-        respSent = true;
         if (err) {
           const error = `Error in pulling image ${imageWithTag}. Error: ${err.message}`;
           console.error(error, err);
-          obs.next({ error });
+          obs.next({ error, pullCompleted: true });
           obs.complete();
           return;
         }
         if (stderr) {
           const error = `Error in pulling image ${imageWithTag}. Error: ${stderr}`;
           console.error(error, err);
-          obs.next({ error });
+          obs.next({ error, pullCompleted: true });
           obs.complete();
           return;
         }
         console.log(stdout);
-        obs.next(imageWithTag);
+        obs.next({ message: stdout, pullCompleted: true });
         obs.complete();
       });
     });
@@ -176,7 +84,7 @@ export class AppService {
    * reads config.json
    * @returns Config
    */
-  getConfig(commandToRun?: string): Config | null {
+  getConfig(commandToRun?: string): Promise<Config | null> {
     if (commandToRun) {
       execSync(commandToRun);
     }
@@ -189,7 +97,7 @@ export class AppService {
     }
     if (!existsSync(configPath)) {
       console.error("config.json doesn't exist on path ", configPath);
-      return null;
+      throw new Error("config.json doesn't exist");
     }
     const configStr = readFileSync(configPath, { encoding: "utf8" });
     if (configStr) {
@@ -198,12 +106,13 @@ export class AppService {
         if (config.runCommandBeforeConfigRead && !commandToRun) {
           return this.getConfig(config.runCommandBeforeConfigRead);
         }
-        return config;
+        return this.validateConfig(config);
       } catch (err) {
         console.error("Invalid config json!!", err);
-        return null;
+        return Promise.resolve(null);
       }
     }
+    throw new Error("Invalid config.json");
   }
 
   /**
@@ -213,7 +122,7 @@ export class AppService {
   getRunningDockerContainers() {
     return new Promise<DockerApp[]>((resolve) => {
       const appsRunning: DockerApp[] = [];
-      exec('docker ps --format "{{json .}}"', (err, stdout, stderr) => {
+      exec('docker ps -a --format "{{json .}}"', (err, stdout, stderr) => {
         if (err) {
           console.error("Error in docker ps!!", err);
           resolve(appsRunning);
@@ -235,7 +144,6 @@ export class AppService {
             } catch {}
           });
         resolve(appsRunning);
-        console.log(appsRunning);
       });
     });
   }
@@ -245,7 +153,7 @@ export class AppService {
    * @param app Config App
    * @param imageWithTag Image with tag
    */
-  dockerRun(app: ConfigApp, imageWithTag: string) {
+  dockerRunImage(app: ConfigApp, imageWithTag: string) {
     if (app.runCommandBeforeAccessApp) {
       console.log(`Running command: ${app.runCommandBeforeAccessApp}`);
       execSync(app.runCommandBeforeAccessApp);
@@ -270,26 +178,70 @@ export class AppService {
   }
 
   /**
-   * Manually up docker apps from config
-   * @param url repository url
-   * @param branch branch name
-   * @returns axios request
+   * Deletes all images other than the provided image with tag
+   * @param image docker image
+   * @param currentTag docker image tag
    */
-  dockerUpAppManually(url: string, branch: string) {
-    const payload = {
-      workflow_run: {
-        status: WorkflowStatus.completed,
-        head_branch: branch,
-      },
-      repository: {
-        html_url: url,
-      },
-    };
-    const signature = createHmac("sha256", process.env.HOOK_SECRET).update(JSON.stringify(payload)).digest("hex");
-    const header = `sha256=${signature}`;
+  deleteOldDockerImages(image: string, currentTag: string) {
+    console.log(`Deleting all old images!!`);
+    execSync('docker image ls --format "{{json .}}"');
+    return new Promise((resolve) => {
+      const dockerImages: DockerImage[] = [];
+      exec('docker image ls --format "{{json .}}"', (err, stdout, stderr) => {
+        if (err) {
+          console.error("Error in docker ps!!", err);
+          resolve(false);
 
-    return this.httpService.post(`http://localhost:${process.env.PORT || 7002}/api/github/workflow`, payload, {
-      headers: { "x-hub-signature-256": header },
+          return;
+        }
+        if (stderr) {
+          console.error("StdError in docker ps!!", stderr);
+          resolve(false);
+          return;
+        }
+        stdout
+          .split(/\n/g)
+          .filter((str) => !!str)
+          .forEach((str) => {
+            try {
+              const obj = JSON.parse(str);
+              dockerImages.push(obj);
+            } catch {}
+          });
+
+        const images = dockerImages.filter((i) => i.Repository === image && i.Tag !== currentTag);
+        images.forEach((i) => {
+          console.log(`deleting image ${i.Repository}:${i.Tag}`);
+          execSync(`docker image rm -f ${i.ID}`);
+        });
+        resolve(true);
+      });
+    });
+  }
+
+  /**
+   * Validate config.json
+   * @param config Config
+   * @returns Config if valid otherwise throws Error
+   */
+  validateConfig(config: Config) {
+    config = plainToClass(Config, config);
+    return validate(config).then((errors) => {
+      if (errors.length) {
+        this.showValidationMessage(errors);
+        throw new Error("Validation failed for config.json");
+      }
+      return config;
+    });
+  }
+
+  showValidationMessage(errors: ValidationError[]) {
+    errors.forEach((err) => {
+      if (err.children.length) {
+        this.showValidationMessage(err.children);
+      } else {
+        console.log("validation error ", err);
+      }
     });
   }
 }

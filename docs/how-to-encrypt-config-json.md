@@ -10,14 +10,9 @@ Docker pull auto supports running a command before reading config json. We will 
 {
   "apps": [
     {
-      "repo": {
-        "url": "https://github.com/codebysandip/react-ssr-doc",
-        "branch": "main"
-      },
       "docker": {
         "image": "sandipj/react-ssr-doc",
         "tagRegex": "prod-[\\da-z]{8,8}-\\d{9,11}$",
-        "hostedOn": "docker-hub",
         "name": "react-ssr-doc",
         "port": "6500:5000"
       }

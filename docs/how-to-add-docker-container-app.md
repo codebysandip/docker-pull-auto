@@ -6,14 +6,9 @@ All the docker apps which needs to pull automatically reside in config.js. This 
 {
   "apps": [
     {
-      "repo": {
-        "url": "https://github.com/codebysandip/react-ssr-doc",
-        "branch": "main"
-      },
       "docker": {
         "image": "sandipj/react-ssr-doc",
         "tagRegex": "prod-[\\da-z]{8,8}-\\d{9,11}$",
-        "hostedOn": "docker-hub",
         "name": "react-ssr-doc",
         "port": "6500:5000",
         "env": {
@@ -33,15 +28,7 @@ config.json have following direct keys:
 
 ## **config.apps**
 
-config.apps key hold all the docker apps which needs to pull automatically. Every app contains information about repository and docker. Lets take a look of each key one by one:
-
-### **app.repo.url**
-
-Repository url of github. Don't add .git at the end
-
-### **app.repo.branch**
-
-Docker will work only when code will merge on Github branch specified in app.repo.branch. If branch is development then docker auto pull will work only when code will merge on development branch.
+config.apps key hold all the docker apps which needs to pull automatically. Every app contains information about docker. Lets take a look of each key one by one:
 
 ### **app.docker.image**
 
@@ -49,11 +36,7 @@ Docker image name. For example [react-ssr-doc](https://hub.docker.com/r/sandipj/
 
 ### **app.docker.tagRegex**
 
-We put different tags based on environment like for development environment, we tag image like dev-{timestamp} and for production prod-{timestamp}. app.docker.tagRegex helps Docker Pull Auto to decide which tag should pull. Docker Pull Auto gets last 20 tags of stored images and compares each tag with tagRegex.
-
-### **app.docker.hostedOn**
-
-hostedOn is requirement parameter to identify where your docker images hosted on. Valid values are aws, docker-hub, github and azure. Currently we are supporting only for docker hub but soon will support all mentioned.
+We put different tags based on environment like for development environment, we tag image like dev-{timestamp} and for production prod-{timestamp}. app.docker.tagRegex helps Docker Pull Auto to decide the current tag should execute or not
 
 ### **app.docker.name**
 

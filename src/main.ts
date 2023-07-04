@@ -11,7 +11,7 @@ async function bootstrap() {
 
   // read config at startup to run config.runCommandBeforeConfigRead
   const appService = app.get(AppService);
-  appService.getConfig();
+  await appService.getConfig();
 
   // load dotenv after config read
   // to allow runCommandBeforeConfigRead to decrypt enc.env

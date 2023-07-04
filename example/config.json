@@ -4,16 +4,15 @@
 			"docker": {
 				"image": "sandipj/react-ssr-doc",
 				"tagRegex": "prod-[\\da-z]{8,8}-\\d{9,11}$",
-				"hostedOn": "docker-hub",
 				"name": "react-ssr-doc",
 				"port": "6500:5000",
 				"env": {
 					"mySecret": "my secret value"
 				},
-				"envFile": "env/react-ssr-doc/.env.development"
+				"envFile": "env/react-ssr-doc/development.env"
 			},
-			"runCommandBeforeAccessApp": "sops -d env/react-ssr-doc/.env.development.enc \u003e env/react-ssr-doc/.env.development"
+			"runCommandBeforeAccessApp": "sops -d env/react-ssr-doc/enc.development.env \u003e env/react-ssr-doc/development.env"
 		}
 	],
-	"runCommandBeforeConfigRead": "sops -d config.enc.json \u003e config.json"
+	"runCommandBeforeConfigRead": "sops -d enc.env > .env && sops -d config.enc.json \u003e config.json"
 }

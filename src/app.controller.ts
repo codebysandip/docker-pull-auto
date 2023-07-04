@@ -17,7 +17,7 @@ export class AppController {
       return;
     }
     console.log("payload!!", payload);
-    const config = this.appService.getConfig();
+    const config = await this.appService.getConfig();
     if (!config) {
       res.status(500).json({
         error: "Config not available",
@@ -41,67 +41,67 @@ export class AppController {
 
     console.log("config app!!", app);
 
+    const containerApps = await this.appService.getRunningDockerContainers();
+    const containerApp = containerApps.find(
+      (ca) => ca.Names.startsWith(app.docker.name) || ca.Image.startsWith(app.docker.image),
+    );
+
+    console.log("container app!!", containerApp);
+    const imageWithTag = `${payload.dockerImage}:${payload.dockerImageTag}`;
+
+    if (containerApp && containerApp.Image === imageWithTag && containerApp.State === "running") {
+      res.status(200).json({
+        message: "Already running this tag",
+      });
+      return;
+    }
+
     const errorMsg = await this.appService.dockerLogin();
     if (errorMsg) {
       res.status(500).json({ error: errorMsg });
       return;
     }
 
-    const containerApps = await this.appService.getRunningDockerContainers();
-    const containerApp = containerApps.find((ca) => ca.Image.startsWith(app.docker.image));
-
-    console.log("container app!!", containerApp);
-
     if (!containerApp) {
       // get latest tag, pull the image and start
-      this.appService.pullImage(`${payload.dockerImage}:${payload.dockerImageTag}`, false).subscribe((imageWithTag) => {
-        if (typeof imageWithTag === "string") {
-          this.appService.dockerRun(app, imageWithTag);
-          if (res.headersSent) {
-            return;
-          }
+      this.appService.pullImage(imageWithTag).subscribe((response) => {
+        if (!res.headersSent) {
+          const statusCode = (response as any).error ? 500 : 200;
+          res.status(statusCode).json(response);
+        }
+        if (response.pullCompleted && response.message) {
+          this.appService.dockerRunImage(app, imageWithTag);
+        }
+
+        if (!res.headersSent) {
           res.status(200).json({
             message: `Docker image ${imageWithTag} started successfully`,
           });
-        } else if ((imageWithTag as { message: string }).message) {
-          res.status(200).json(imageWithTag);
         }
-        if (res.headersSent) {
-          return;
-        }
-        res.status(500).json(imageWithTag);
       });
     } else {
-      this.appService.pullImage(`${payload.dockerImage}:${payload.dockerImageTag}`, false).subscribe((imageWithTag) => {
-        if (typeof imageWithTag === "string") {
-          if (containerApp.Image === imageWithTag) {
-            res.status(200).json({
-              message: "Server already have latest tag",
-            });
-            return;
-          } else {
-            console.log(`Stopping container ${containerApp.ID}`);
-            execSync(`docker stop ${containerApp.ID}`);
-
-            this.appService.dockerRun(app, imageWithTag);
-
-            console.log(`Deleting old image ${containerApp.Image}`);
-            execSync(`docker image rm ${containerApp.Image} -f`);
-            if (res.headersSent) {
-              return;
-            }
-            res.status(200).json({
-              message: `Docker image ${imageWithTag} started`,
-            });
-            return;
-          }
-        } else if ((imageWithTag as { message: string }).message) {
-          res.status(200).json(imageWithTag);
+      this.appService.pullImage(imageWithTag).subscribe(async (response) => {
+        if (!res.headersSent) {
+          const statusCode = (response as any).error ? 500 : 200;
+          res.status(statusCode).json(response);
         }
-        if (res.headersSent) {
-          return;
+        if (response.pullCompleted && response.message) {
+          console.log(`Stopping container ${containerApp.ID}`);
+          execSync(`docker stop ${containerApp.ID}`);
+
+          console.log(`Removing container ${containerApp.ID}`);
+          execSync(`docker rm --force ${containerApp.ID}`);
+
+          this.appService.dockerRunImage(app, imageWithTag);
+
+          await this.appService.deleteOldDockerImages(payload.dockerImage, payload.dockerImageTag);
         }
-        res.status(500).json(imageWithTag);
+        if (!res.headersSent) {
+          res.status(200).json({
+            message: `Docker image ${imageWithTag} started`,
+          });
+        }
+        return;
       });
     }
   }

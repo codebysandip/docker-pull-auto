@@ -8,7 +8,8 @@ $ENV:SOPS_AGE_KEY_FILE="key.txt"
 sops -d config.enc.json > config.json
 
 // encrypt env file with sops
-sops -e --age age1tsjl8t74tp2dsaaf7j246ndmhcd8hzt82vnpkk8g5a8hqvtl5y9s5y9vsf env/react-ssr-doc/.env.development > env/react-ssr-doc/.env.development.enc
+sops -e --age age1tsjl8t74tp2dsaaf7j246ndmhcd8hzt82vnpkk8g5a8hqvtl5y9s5y9vsf env/react-ssr-doc/development.env > env/react-ssr-doc/enc.development.env
+sops -e env/react-ssr-doc/development.env > env/react-ssr-doc/enc.development.env
 
 // decrypt env file
-sops -d  env/react-ssr-doc/.env.development.enc > env/react-ssr-doc/.env.development
+sops -d  env/react-ssr-doc/enc.development.env > env/react-ssr-doc/development.env
