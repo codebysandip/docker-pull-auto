@@ -61,3 +61,7 @@ You can run a command before docker pull run docker image. You can run a command
 ## **runCommandBeforeConfigRead**
 
 This key is useful in scenario where you want to run a command before config read. A good example can be decrypt `app.docker.env` before reading config.json. This project supports adding of encrypted config.json also. It means you can save config json in format config.enc.json or config.{NODE_ENV}.enc.json. Docker Pull Auto will read enc file if available instead of reading config json.
+
+## **dockerLoginCommand**
+
+Docker pull auto runs a command of docker login before pulling a image. You can pass your custom command for docker login. 

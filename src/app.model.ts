@@ -21,66 +21,60 @@ export interface DockerApp {
 export class ConfigDocker {
   /**
    * Docker image
-   * @example sandipj/react-ssr-doc
+   *
+   * @example
+   *   sandipj / react - ssr - doc;
    */
   @IsNotEmpty()
   image: string;
-  /**
-   * tag regex to match tag
-   * We get all tags from docker and match with tagRegex
-   */
+  /** Tag regex to match tag with upcoming tag */
   @IsNotEmpty()
   tagRegex: string;
 
-  /**
-   * Name which will use to run docker image
-   */
+  /** Name which will use to run docker image */
   @IsNotEmpty()
   name: string;
   /**
    * Internal and external
-   * @example 3000:5000
+   *
+   * @example
+   *   3000:5000
    */
   @IsNotEmpty()
   port: string;
-  /**
-   * docker environment variables
-   * These variables passed as environment variables while running docker image
-   */
+  /** Docker environment variables These variables passed as environment variables while running docker image */
   env?: Record<string, string>;
-  /**
-   * path of env file.
-   * we pass env file while running docker image
-   */
+  /** Path of env file. we pass env file while running docker image */
   envFile?: string;
 }
 export class Config {
-  /**
-   * Docker apps
-   */
+  /** Docker apps */
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ConfigApp)
   apps: ConfigApp[];
   /**
-   * command to run before reading config.json.
+   * Command to run before reading config.json.\
    * This enables decryption of config.json via sops or similar tool
    */
   runCommandBeforeConfigRead: string;
+
+  /** Will use this command for docker login */
+  dockerLoginCommand?: string;
 }
 
 export class ConfigApp {
-  /**
-   * Docker info
-   */
+  /** Docker info */
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => ConfigDocker)
   docker: ConfigDocker;
   /**
-   * run command before access app.
-   * @example decrypt env file before docker app access env file
+   * Run command before access app.
+   *
+   * @example
+   *   decrypt env file before docker app access env file
    */
   runCommandBeforeAccessApp?: string;
 }

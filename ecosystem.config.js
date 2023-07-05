@@ -7,6 +7,9 @@ module.exports = {
       exec_mode: "fork",
       max_restarts: 5,
       restart_delay: 1000,
+      env_development: {
+        NODE_ENV: "development",
+      },
     },
   ],
 };

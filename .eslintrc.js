@@ -32,6 +32,7 @@ module.exports = {
         jsxSingleQuote: false,
         bracketSpacing: true,
         endOfLine: "auto",
+        "plugins": ["prettier-plugin-jsdoc"],
       },
     ],
     "no-trailing-spaces": ["error", { "ignoreComments": true }]

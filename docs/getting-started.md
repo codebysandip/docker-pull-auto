@@ -80,3 +80,54 @@ For example, I will use [react--sr-doc](https://github.com/codebysandip/react-ss
    ```bash
     npm run start:dev
    ```
+
+10. Last step is to include [docker pull auto action](https://github.com/marketplace/actions/docker-pull-auto-action) in all your project's github workflow. docker pull auto action sends request to docker pull auto webhook api with docker image and tag which needs to run on your server. Below is example workflow file of react-ssr-doc:
+
+```yaml
+name: Docker build & push
+
+on:
+  push:
+    branches:
+      - "main"
+jobs:
+  build:
+    timeout-minutes: 20
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Get build version
+        id: vars
+        run: echo short_hash=$(echo ${GITHUB_SHA::8}) >> $GITHUB_OUTPUT
+
+      - name: Get latest commit timestamp
+        id: commit_epoch
+        run: echo epoch=$(echo $(git show -s --format=%ct))  >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          context: ${{ github.workspace }}
+          tags: sandipj/react-ssr-doc:prod-${{steps.vars.outputs.short_hash}}-${{steps.commit_epoch.outputs.epoch}}
+          build-args: |
+            env=prod
+
+      - name: Docker Pull Auto
+        uses: codebysandip/docker-pull-auto-action@v1.2
+        with:
+          docker-image: sandipj/react-ssr-doc
+          docker-tag: prod-${{steps.vars.outputs.short_hash}}-${{steps.commit_epoch.outputs.epoch}}
+          domain: dockerpullauto.sandipj.dev
+          hook-secret: ${{ secrets.HOOK_SECRET }}
+
+```

@@ -15,11 +15,12 @@ export class AppService {
   constructor(private readonly httpService: HttpService) {}
 
   /**
-   * Verify signature of github payload. You can set secret on Github webhook.
-   * Github will use secret to createHmac from payload and will send in header key x-hub-signature-256
-   * @param body payload of Github webhook
-   * @param header github sends x-hub-signature-256 header
-   * @returns boolean
+   * Verify signature of github payload. You can set secret on Github webhook. Github will use secret to createHmac from
+   * payload and will send in header key x-hub-signature-256
+   *
+   * @param body Payload of Github webhook
+   * @param header Github sends x-hub-signature-256 header
+   * @returns Boolean
    */
   verifySignature(body: unknown, header: string) {
     const signature = createHmac("sha256", process.env.HOOK_SECRET).update(JSON.stringify(body)).digest("hex");
@@ -28,7 +29,8 @@ export class AppService {
 
   /**
    * Pull image from docker
-   * @param imageWithTag image:tag
+   *
+   * @param imageWithTag Image:tag
    * @returns Observable
    */
   pullImage(imageWithTag: string) {
@@ -66,10 +68,20 @@ export class AppService {
     });
   }
 
-  dockerLogin() {
+  /**
+   * Login in docker using config.dockerLoginCommand or\
+   * Via DOCKER_USERNAME and DOCKER_TOKEN which resides in .env
+   */
+  dockerLogin(config: Config) {
     console.log("docker login!!");
+    let loginCommand = "";
+    if (config.dockerLoginCommand) {
+      loginCommand = config.dockerLoginCommand;
+    } else {
+      loginCommand = `docker login -u ${process.env.DOCKER_USERNAME} -p ${process.env.DOCKER_TOKEN}`;
+    }
     return new Promise<string>((resolve) => {
-      exec(`docker login -u ${process.env.DOCKER_USERNAME} -p ${process.env.DOCKER_TOKEN}`, (err) => {
+      exec(loginCommand, (err) => {
         if (err) {
           resolve(`Unable to login docker. Error: ${err.message}`);
         } else {
@@ -81,7 +93,8 @@ export class AppService {
   }
 
   /**
-   * reads config.json
+   * Reads config.json
+   *
    * @returns Config
    */
   getConfig(commandToRun?: string): Promise<Config | null> {
@@ -117,7 +130,8 @@ export class AppService {
 
   /**
    * Get running docker containers on system. This method uses command docker ps --format json
-   * @returns running docker containers
+   *
+   * @returns Running docker containers
    */
   getRunningDockerContainers() {
     return new Promise<DockerApp[]>((resolve) => {
@@ -150,6 +164,7 @@ export class AppService {
 
   /**
    * Run docker image
+   *
    * @param app Config App
    * @param imageWithTag Image with tag
    */
@@ -179,8 +194,9 @@ export class AppService {
 
   /**
    * Deletes all images other than the provided image with tag
-   * @param image docker image
-   * @param currentTag docker image tag
+   *
+   * @param image Docker image
+   * @param currentTag Docker image tag
    */
   deleteOldDockerImages(image: string, currentTag: string) {
     console.log(`Deleting all old images!!`);
@@ -221,6 +237,7 @@ export class AppService {
 
   /**
    * Validate config.json
+   *
    * @param config Config
    * @returns Config if valid otherwise throws Error
    */
