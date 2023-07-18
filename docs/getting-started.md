@@ -123,7 +123,7 @@ jobs:
             env=prod
 
       - name: Docker Pull Auto
-        uses: codebysandip/docker-pull-auto-action@v1.2
+        uses: codebysandip/docker-pull-auto-action@v1.5
         with:
           docker-image: sandipj/react-ssr-doc
           docker-tag: prod-${{steps.vars.outputs.short_hash}}-${{steps.commit_epoch.outputs.epoch}}
