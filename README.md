@@ -5,6 +5,6 @@ You add a config.json file for your docker containers which need to pull auto. W
 
 ## High level diagram
 
-![High level diagram of docker pull auto](./docs/assets/docker-auto-pull-flow.drawio.png)
+![High level diagram of docker pull auto](./docs/assets/docker-auto-pull-flow.png)
 
 [Check documentation here](https://codebysandip.github.io/docker-pull-auto)
